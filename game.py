@@ -51,7 +51,6 @@ class Game:
         self.corrupted_ai = None
         self.game_over = False
         self.setup_ais()
-        self.setup_clues()
     
     def setup_ais(self):
         """Initialize the 5 AI models."""
@@ -154,16 +153,6 @@ class Game:
                     ai.add_suspicious_behavior("Routine surveillance sweep took longer than expected")
                     ai.set_alibi("I was analyzing data patterns with ATLAS")
     
-    def setup_clues(self):
-        """Setup available clues for the player to discover."""
-        self.available_clues = [
-            "Check AI activity logs",
-            "Interview each AI individually",
-            "Examine resource allocation records",
-            "Review security breach reports",
-            "Analyze communication patterns"
-        ]
-    
     def print_intro(self):
         """Print the game introduction."""
         print("\n" + "="*60)
@@ -208,8 +197,9 @@ class Game:
             if ai.suspicious_behavior:
                 for i, behavior in enumerate(ai.suspicious_behavior, 1):
                     print(f"{i}. {behavior}")
-                    if ai.is_corrupted:
-                        self.clues_found.append(f"{ai.name}: {behavior}")
+                    clue = f"{ai.name}: {behavior}"
+                    if clue not in self.clues_found:
+                        self.clues_found.append(clue)
             else:
                 print("No suspicious activities recorded.")
             print()
