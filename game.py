@@ -374,17 +374,19 @@ class Game:
         input("\nPress Enter to start investigating...")
         self.investigation_phase()
         
-        if not self.game_over or input("\nPlay again? (y/n): ").strip().lower() == 'y':
-            if self.game_over:
-                self.__init__()
-                self.play()
+        if self.game_over and input("\nPlay again? (y/n): ").strip().lower() == 'y':
+            return True
+        return False
 
 
 def main():
     """Main entry point for the game."""
     try:
-        game = Game()
-        game.play()
+        while True:
+            game = Game()
+            play_again = game.play()
+            if not play_again:
+                break
     except KeyboardInterrupt:
         print("\n\nGame interrupted. The corrupted AI wins by default...")
         sys.exit(0)
