@@ -1,6 +1,6 @@
 # AI Corruption - Text-Based Detective Game
 
-Challenge after Block A, text-based game with python
+Challenge after Block A, text-based game with Python
 
 ## Game Description
 
