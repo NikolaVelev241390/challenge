@@ -11,6 +11,7 @@ import random
 import sys
 # take the word list from a file
 import json
+from prompt import generate_text
 
 
 class AI:
@@ -50,8 +51,10 @@ class Game:
     def __init__(self):
         self.ais = []
         self.clues_found = []
+        self.energy_level = 10
         self.corrupted_ai = None
         self.game_over = False
+        self.time_day = 1
         self.setup_ais()
 
     def setup_ais(self):
@@ -187,9 +190,10 @@ class Game:
         print(f"What would you like to know about {ai.name}?")
         print("1. View suspicious activities")
         print("2. Ask about their alibi")
-        print("3. Return to main investigation")
+        print("3. Talk with the AI")
+        print("4. Return to main investigation")
 
-        choice = input("\nYour choice (1-3): ").strip()
+        choice = input("\nYour choice (1-4): ").strip()
 
         if choice == "1":
             print(f"\n--- Suspicious Activities for {ai.name} ---")
@@ -207,11 +211,27 @@ class Game:
             print(ai.alibi)
             print()
         elif choice == "3":
+            self.talk_with_the_ai(ai)
+        elif choice == "4":
             return
         else:
             print("\nInvalid choice.")
 
         input("Press Enter to continue...")
+
+    def talk_with_the_ai(self, ai):
+        """Allow player to have a conversation with the AI using the language model."""
+        print(
+            f"\nYou are now talking with {ai.name}. Type 'exit' to end the conversation.")
+        while True:
+            user_input = input("\nYou: ").strip()
+            if user_input.lower() == 'exit':
+                print(f"Ending conversation with {ai.name}.\n")
+                break
+            prompt = f"You need to respond as {ai.name}, who is a {ai.role} with the following personality: {ai.personality}. " \
+                f"The user says: '{user_input}'. Respond accordingly."
+            response = generate_text(prompt, max_tokens=50)
+            print(f"{ai.name}: {response}")
 
     def investigation_phase(self):
         """Main investigation phase where player gathers clues."""
@@ -359,6 +379,7 @@ class Game:
             print(" "*15 + "GAME OVER")
             print("="*60)
 
+    # MINI GAMES, ENERGY MANAGEMENT, AND DAY CYCLE
     def wordle_game(self):
         """A simple Wordle mini-game with 6 attempts and per-letter feedback."""
         # @audit -> can you make the wordle have a ai which makes the game harder based on the day.
@@ -411,9 +432,37 @@ class Game:
 
             if guess == word:
                 print("\nCorrect! You solved the mini-game.")
+                self.energy_level += 5
+                print(
+                    f"Your energy level has increased to {self.energy_level}.")
                 return
 
         print(f"\nOut of attempts. The correct word was: {word}")
+
+    def consume_energy(self, amount):
+        """Consume energy and advance day if energy runs out."""
+        self.energy_level -= amount
+        print(f"\n(energy -{amount}) Current energy: {self.energy_level}")
+        if self.energy_level <= 0:
+            self.advance_day()
+
+    def advance_day(self):
+        """Handle end-of-day behavior: increment day, reset energy and run daily updates."""
+        print("\n" + "-"*40)
+        print(
+            f"Day {self.time_day}: You ran out of energy. Taking a rest and proceeding to the next day.")
+        self.time_day += 1
+        print("-"*40 + "\n")
+        self.energy_level = 10
+        # Plan to escalate the mini games and AI behaviors here
+        self.daily_update()
+
+    # Hook for daily updates, changing the mini game, or difficulty, or AI behaviours or adding new clues
+    def daily_update(self):
+        """Hook for daily events (escalation, AI behavior changes, etc.)."""
+        # Example: increase mini-game difficulty or add a suspicious behavior
+        # This function is intentionally small; expand as your game needs.
+        pass
 
     def play(self):
         """Main game loop."""
