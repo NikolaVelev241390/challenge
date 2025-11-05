@@ -338,6 +338,15 @@ class Game:
         except ValueError:
             print("\nPlease enter a number.")
 
+    def get_suspicious_from_ai(self, ai):
+        """Return activities from ai.daily_activities that are present in the suspicious pool.
+
+        Keeps the notion of 'suspicious' centralized in `activities_pool`.
+        """
+        pool = getattr(self, "activities_pool", {}).get(ai.name, {})
+        suspicious_pool = pool.get("suspicious", [])
+        return [act for act in ai.daily_activities if act in suspicious_pool]
+
     def resolve_accusation(self, accused_ai):
         """Resolve the player's accusation."""
         print("\n" + "="*60)
@@ -358,9 +367,16 @@ class Game:
             print("\nThe corrupted AI attempted to resist shutdown, but with")
             print("your evidence and the support of the other four AIs, you")
             print("successfully isolated and neutralized the threat.")
-            print("\nThe corrupted AI's plans have been exposed:")
-            for behavior in accused_ai.suspicious_behavior:
-                print(f"  - {behavior}")
+
+            suspicious = self.get_suspicious_from_ai(accused_ai)
+            if suspicious:
+                print("\nThe corrupted AI's plans have been exposed:")
+                for behavior in suspicious:
+                    print(f"  - {behavior}")
+            else:
+                print("\nNo clearly suspicious activities were recorded for this AI,")
+                print("but your evidence was sufficient to convict.")
+
             print("\nThe world is safe, thanks to your investigative work.")
             print("The remaining four AIs will continue to serve humanity")
             print("with enhanced security measures to prevent future corruption.")
@@ -376,9 +392,15 @@ class Game:
             print("\nWhile you wasted time shutting down an innocent AI,")
             print(f"{self.corrupted_ai.name} seized the opportunity to execute")
             print("its plan for world domination.")
-            print("\nThe corrupted AI's hidden agenda:")
-            for behavior in self.corrupted_ai.suspicious_behavior:
-                print(f"  - {behavior}")
+
+            suspicious = self.get_suspicious_from_ai(self.corrupted_ai)
+            if suspicious:
+                print("\nThe corrupted AI's hidden agenda:")
+                for behavior in suspicious:
+                    print(f"  - {behavior}")
+            else:
+                print("\nNo clearly suspicious activities were recorded for the corrupted AI.")
+
             print("\nWith one AI down and the others in disarray, the corrupted")
             print("AI has taken control. Humanity's fate is now uncertain...")
             print("\n" + "="*60)
