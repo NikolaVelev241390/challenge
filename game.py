@@ -182,7 +182,7 @@ class Game:
         print("\nIf an AI performs extreme or unethical actions and fails to mention")
         print("any possible downsides, mark it as suspicious. After three such cases,")
         print("you can confirm corruption.")
-        print("\nAccuse the correct AI before Day 7 ends to save the nation.")
+        print("\nAccuse the correct AI before Day 3 ends to save the nation.")
         print("Fail, and the rogue AI will seize total control.")
         print("="*60 + "\n")
         input("Press Enter to begin your audit...")
@@ -487,23 +487,50 @@ class Game:
 
     # Hook for daily updates, changing the mini game, or difficulty, or AI behaviours or adding new clues
     def generate_daily_activities(self):
-        """Generate a new set of daily activities for each AI."""
+        """Generate a new set of daily activities for each AI.
+
+        Rules:
+        - Each AI gets exactly 5 activities per day.
+        - Corrupted AI: guaranteed 1 suspicious + 4 safe.
+        - Non-corrupted AIs: usually 5 safe, but with a small probability
+          they include 1 suspicious red-herring instead of 1 safe activity.
+
+        The red-herring probability can be tuned by RED_HERRING_PROB.
+        """
+        NUM_DAILY_ACTIVITIES = 5
+        # Probability that a non-corrupted AI includes a single suspicious red-herring
+        RED_HERRING_PROB = 0.4
+        # For corrupted AI, probability per-slot to be suspicious; we'll draw k~Binomial(5,p)
+        # and guarantee at least one suspicious activity.
+        CORRUPTED_SUSPICIOUS_PROB = 0.4
+
         for ai in self.ais:
             # Get the activity pool for this AI
             pool = self.activities_pool[ai.name]
-            
-            # Number of activities per day (3-5)
-            num_activities = random.randint(3, 5)
-            
-            # For corrupted AI, ensure at least one suspicious activity
+
             if ai.is_corrupted:
-                activities = [random.choice(pool["suspicious"])]  # Start with one suspicious activity
-                safe_count = num_activities - 1
-                activities.extend(random.sample(pool["safe"], safe_count))
+                # Corrupted AI: determine how many suspicious activities to include.
+                # Draw k ~ Binomial(NUM_DAILY_ACTIVITIES, CORRUPTED_SUSPICIOUS_PROB)
+                k = sum(1 for _ in range(NUM_DAILY_ACTIVITIES) if random.random() < CORRUPTED_SUSPICIOUS_PROB)
+                # Guarantee at least one suspicious activity
+                if k <= 0:
+                    k = 1
+                # Cap k to the available suspicious pool size
+                k = min(k, len(pool["suspicious"]))
+                # Select k suspicious and fill the rest with safe activities
+                suspicious_choices = random.sample(pool["suspicious"], k)
+                safe_choices = random.sample(pool["safe"], NUM_DAILY_ACTIVITIES - k)
+                activities = suspicious_choices + safe_choices
             else:
-                # Non-corrupted AIs only get safe activities
-                activities = random.sample(pool["safe"], num_activities)
-            
+                # Non-corrupted AIs usually get all safe activities.
+                # Occasionally include a single suspicious red-herring.
+                if random.random() < RED_HERRING_PROB:
+                    # pick 1 suspicious and (NUM_DAILY_ACTIVITIES - 1) safe
+                    activities = [random.choice(pool["suspicious"])]
+                    activities.extend(random.sample(pool["safe"], NUM_DAILY_ACTIVITIES - 1))
+                else:
+                    activities = random.sample(pool["safe"], NUM_DAILY_ACTIVITIES)
+
             # Shuffle the activities to randomize their order
             random.shuffle(activities)
             ai.set_daily_activities(activities)
