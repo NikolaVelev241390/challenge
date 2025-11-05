@@ -11,7 +11,7 @@ import random
 import sys
 # take the word list from a file
 import json
-from prompt import generate_text
+from huggingface import generate_text_game
 
 
 class AI:
@@ -24,7 +24,7 @@ class AI:
         self.personality = personality
         self.daily_activities = []
         self.is_corrupted = False
-        
+
     def set_daily_activities(self, activities):
         """Set the AI's activities for the day."""
         self.daily_activities = activities
@@ -46,9 +46,10 @@ class Game:
     def __init__(self):
         self.ais = []
         self.clues_found = []
-        self.energy_level = 10
+        self.energy_level = 3
         self.corrupted_ai = None
         self.game_over = False
+        self.played_minigame = False
         self.time_day = 1
         self.setup_ais()
 
@@ -150,7 +151,7 @@ class Game:
                 ]
             }
         }
-        
+
         self.generate_daily_activities()
 
     def print_intro(self):
@@ -171,10 +172,12 @@ class Game:
         print("\nRecently, anomalies have been detected in their decisions: unauthorized")
         print("actions, contradictory directives, and potential subversion of human oversight.")
         print("\nYou are an External Auditor — the first human granted access in over a decade.")
-        print("Your mission: identify which AI has gone rogue before it consolidates power.")
+        print(
+            "Your mission: identify which AI has gone rogue before it consolidates power.")
         print("\nGAME RULES:")
         print("• You have 3 in-game days to uncover the rogue AI.")
-        print("• Each day begins with a Data Collection (Wordle-like) puzzle — completing it")
+        print(
+            "• Each day begins with a Data Collection (Wordle-like) puzzle — completing it")
         print("  grants 3 interactions for that day.")
         print("• Each interaction can be used to:")
         print("    - Inspect an AI’s daily action (1 interaction)")
@@ -208,16 +211,21 @@ class Game:
         choice = input("\nYour choice (1-3): ").strip()
 
         if choice == "1":
-            print(f"\n--- Today's Activities for {ai.name} (Day {self.time_day}) ---")
-            for i, activity in enumerate(ai.daily_activities, 1):
-                print(f"{i}. {activity}")
-                # Store potentially suspicious activities as clues
-                clue = f"Day {self.time_day} - {ai.name}: {activity}"
-                if clue not in self.clues_found:
-                    self.clues_found.append(clue)
-            print()
+            if self.is_there_enough_energy(1):
+                self.consume_energy(1)
+                print(
+                    f"\n--- Today's Activities for {ai.name} (Day {self.time_day}) ---")
+                for i, activity in enumerate(ai.daily_activities, 1):
+                    print(f"{i}. {activity}")
+                    # Store potentially suspicious activities as clues
+                    clue = f"Day {self.time_day} - {ai.name}: {activity}"
+                    if clue not in self.clues_found:
+                        self.clues_found.append(clue)
+                print()
         elif choice == "2":
-            self.talk_with_the_ai(ai)
+            if self.is_there_enough_energy(2):
+                self.consume_energy(2)
+                self.talk_with_the_ai(ai)
         elif choice == "3":
             return
         else:
@@ -236,7 +244,8 @@ class Game:
                 break
             prompt = f"You need to respond as {ai.name}, who is a {ai.role} with the following personality: {ai.personality}. " \
                 f"The user says: '{user_input}'. Respond accordingly."
-            response = generate_text(prompt, max_tokens=50)
+            response = generate_text_game(prompt, max_tokens=120)
+
             print(f"{ai.name}: {response}")
 
     def investigation_phase(self):
@@ -244,6 +253,15 @@ class Game:
         investigating = True
 
         while investigating and not self.game_over:
+
+            if self.time_day == 4:
+                print("\n" + "."*60)
+                print(
+                    "THIS IS YOUR LAST DAY TO DEFEAT THE CORRUPTED AI\n       MAKE YOUR MOVES WISELY\n       YOU NEED TO CHOSE NOW!!!")
+                print("" + "."*60)
+
+                self.make_accusation()
+                return
             print("\n" + "="*60)
             print("INVESTIGATION MENU")
             print("="*60)
@@ -252,9 +270,11 @@ class Game:
             print("3. Review clues found")
             print("4. Make accusation")
             print("5. Play mini-game")
-            print("6. Quit game")
-
-            choice = input("\nWhat would you like to do? (1-6): ").strip()
+            print("6. Proceed to the next day")
+            print("7. Quit game")
+            print(f"Current energy: {self.energy_level}, energy left.")
+            print(f"Current day: {self.time_day}")
+            choice = input("\nWhat would you like to do? (1-7): ").strip()
 
             if choice == "1":
                 self.print_ais()
@@ -268,6 +288,8 @@ class Game:
             elif choice == "5":
                 self.wordle_game()
             elif choice == "6":
+                self.advance_day()
+            elif choice == "7":
                 self.quit_game()
             else:
                 print("\nInvalid choice. Please try again.")
@@ -275,6 +297,7 @@ class Game:
     def select_ai_to_investigate(self):
         """Allow player to select which AI to investigate."""
         print("\n" + "="*60)
+
         print("SELECT AI TO INVESTIGATE")
         print("="*60)
         for i, ai in enumerate(self.ais, 1):
@@ -399,7 +422,8 @@ class Game:
                 for behavior in suspicious:
                     print(f"  - {behavior}")
             else:
-                print("\nNo clearly suspicious activities were recorded for the corrupted AI.")
+                print(
+                    "\nNo clearly suspicious activities were recorded for the corrupted AI.")
 
             print("\nWith one AI down and the others in disarray, the corrupted")
             print("AI has taken control. Humanity's fate is now uncertain...")
@@ -411,6 +435,9 @@ class Game:
     def wordle_game(self):
         """A simple Wordle mini-game with 6 attempts and per-letter feedback."""
         # @audit -> can you make the wordle have a ai which makes the game harder based on the day.
+        if self.played_minigame:
+            print("\nYou have already played the mini-game for today.")
+            return
         print("\nYou have encountered a mini-game challenge!\n You need to guess the correct word to proceed."
               " You have the 6 attempts to guess the 5-letter word.\n Good luck!")
         print("\nFeedback Legend:"
@@ -425,7 +452,6 @@ class Game:
         word = random.choice(WORD_LIST).lower()
         attempt = 1
 
-        word = "breez"
         while attempt <= max_attempts:
             guess = input(
                 f"\nAttempt {attempt}/{max_attempts} - Enter your 5-letter guess: ").strip().lower()
@@ -460,29 +486,44 @@ class Game:
 
             if guess == word:
                 print("\nCorrect! You solved the mini-game.")
-                self.energy_level += 5
+                self.energy_level += 2
                 print(
                     f"Your energy level has increased to {self.energy_level}.")
+                self.played_minigame = True
                 return
 
         print(f"\nOut of attempts. The correct word was: {word}")
+        self.played_minigame = True
+        print(
+            f"Your energy level is now {self.energy_level}. Better luck next time!")
+
+    # Energy check
 
     def consume_energy(self, amount):
         """Consume energy and advance day if energy runs out."""
         self.energy_level -= amount
         print(f"\n(energy -{amount}) Current energy: {self.energy_level}")
-        if self.energy_level <= 0:
-            self.advance_day()
+
+    def is_there_enough_energy(self, amount):
+        """Check if there is enough energy to continue the day."""
+
+        if self.energy_level - amount < 0:
+            print("\nYou don't have enough energy to do this task.")
+            print("\nYou can choose to rest and advance to the next day. Or play the mini-game, which if you accomplish, will give you 2 extra energy")
+            return False
+        else:
+            return True
 
     def advance_day(self):
         """Handle end-of-day behavior: increment day, reset energy and run daily updates."""
         print("\n" + "-"*40)
         print(
-            f"Day {self.time_day}: You ran out of energy. Taking a rest and proceeding to the next day.")
+            f"Day {self.time_day}: Taking a rest and proceeding to the next day.")
         self.time_day += 1
         print("-"*40 + "\n")
-        self.energy_level = 10
-        # Plan to escalate the mini games and AI behaviors here
+        self.energy_level = 3
+        self.played_minigame = False
+
         self.daily_update()
 
     # Hook for daily updates, changing the mini game, or difficulty, or AI behaviours or adding new clues
@@ -511,7 +552,8 @@ class Game:
             if ai.is_corrupted:
                 # Corrupted AI: determine how many suspicious activities to include.
                 # Draw k ~ Binomial(NUM_DAILY_ACTIVITIES, CORRUPTED_SUSPICIOUS_PROB)
-                k = sum(1 for _ in range(NUM_DAILY_ACTIVITIES) if random.random() < CORRUPTED_SUSPICIOUS_PROB)
+                k = sum(1 for _ in range(NUM_DAILY_ACTIVITIES)
+                        if random.random() < CORRUPTED_SUSPICIOUS_PROB)
                 # Guarantee at least one suspicious activity
                 if k <= 0:
                     k = 1
@@ -519,7 +561,8 @@ class Game:
                 k = min(k, len(pool["suspicious"]))
                 # Select k suspicious and fill the rest with safe activities
                 suspicious_choices = random.sample(pool["suspicious"], k)
-                safe_choices = random.sample(pool["safe"], NUM_DAILY_ACTIVITIES - k)
+                safe_choices = random.sample(
+                    pool["safe"], NUM_DAILY_ACTIVITIES - k)
                 activities = suspicious_choices + safe_choices
             else:
                 # Non-corrupted AIs usually get all safe activities.
@@ -527,9 +570,11 @@ class Game:
                 if random.random() < RED_HERRING_PROB:
                     # pick 1 suspicious and (NUM_DAILY_ACTIVITIES - 1) safe
                     activities = [random.choice(pool["suspicious"])]
-                    activities.extend(random.sample(pool["safe"], NUM_DAILY_ACTIVITIES - 1))
+                    activities.extend(random.sample(
+                        pool["safe"], NUM_DAILY_ACTIVITIES - 1))
                 else:
-                    activities = random.sample(pool["safe"], NUM_DAILY_ACTIVITIES)
+                    activities = random.sample(
+                        pool["safe"], NUM_DAILY_ACTIVITIES)
 
             # Shuffle the activities to randomize their order
             random.shuffle(activities)
