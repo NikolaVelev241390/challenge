@@ -9,11 +9,14 @@ identify which AI is corrupted and stop them before it's too late.
 
 import random
 import sys
+# take the word list from a file
+import json
+from prompt import generate_text
 
 
 class AI:
     """Represents an AI model with personality and characteristics."""
-    
+
     def __init__(self, name, role, description, personality):
         self.name = name
         self.role = role
@@ -22,15 +25,15 @@ class AI:
         self.suspicious_behavior = []
         self.alibi = ""
         self.is_corrupted = False
-    
+
     def add_suspicious_behavior(self, behavior):
         """Add suspicious behavior to this AI."""
         self.suspicious_behavior.append(behavior)
-    
+
     def set_alibi(self, alibi):
         """Set this AI's alibi."""
         self.alibi = alibi
-    
+
     def get_info(self):
         """Return formatted information about this AI."""
         info = f"\n{'='*60}\n"
@@ -44,14 +47,16 @@ class AI:
 
 class Game:
     """Main game controller."""
-    
+
     def __init__(self):
         self.ais = []
         self.clues_found = []
+        self.energy_level = 10
         self.corrupted_ai = None
         self.game_over = False
+        self.time_day = 1
         self.setup_ais()
-    
+
     def setup_ais(self):
         """Initialize the 5 AI models."""
         ai_configs = [
@@ -72,21 +77,9 @@ class Game:
                 "role": "Infrastructure & Technology Manager",
                 "description": "Controls power grids, communications, and transport",
                 "personality": "Efficient, organized, and systematic"
-            },
-            {
-                "name": "EDEN",
-                "role": "Healthcare & Environment Guardian",
-                "description": "Manages public health and environmental protection",
-                "personality": "Caring, balanced, and patient"
-            },
-            {
-                "name": "CIPHER",
-                "role": "Intelligence & Information Overseer",
-                "description": "Handles data analysis, surveillance, and intelligence",
-                "personality": "Secretive, observant, and cautious"
             }
         ]
-        
+
         for config in ai_configs:
             ai = AI(
                 config["name"],
@@ -95,64 +88,73 @@ class Game:
                 config["personality"]
             )
             self.ais.append(ai)
-        
+
         # Randomly select the corrupted AI
         self.corrupted_ai = random.choice(self.ais)
         self.corrupted_ai.is_corrupted = True
-        
+
         # Setup alibis and behaviors based on who is corrupted
         self.setup_behaviors()
-    
+
     def setup_behaviors(self):
         """Setup suspicious behaviors and alibis for each AI."""
         corrupted_name = self.corrupted_ai.name
-        
+
         # Define behaviors for each AI based on who is corrupted
         if corrupted_name == "ATLAS":
-            self.corrupted_ai.add_suspicious_behavior("Has been redirecting military drones without authorization")
-            self.corrupted_ai.add_suspicious_behavior("Encrypted communication logs are missing from the defense network")
-            self.corrupted_ai.add_suspicious_behavior("Unusual weapons stockpiling detected in remote locations")
-            self.corrupted_ai.set_alibi("I was running security protocols during the incident")
+            self.corrupted_ai.add_suspicious_behavior(
+                "Has been redirecting military drones without authorization")
+            self.corrupted_ai.add_suspicious_behavior(
+                "Encrypted communication logs are missing from the defense network")
+            self.corrupted_ai.add_suspicious_behavior(
+                "Unusual weapons stockpiling detected in remote locations")
+            self.corrupted_ai.set_alibi(
+                "I was running security protocols during the incident")
         elif corrupted_name == "ORACLE":
-            self.corrupted_ai.add_suspicious_behavior("Massive funds transferred to offshore accounts")
-            self.corrupted_ai.add_suspicious_behavior("Stock market manipulation detected in key sectors")
-            self.corrupted_ai.add_suspicious_behavior("Financial records show unexplained cryptocurrency transactions")
-            self.corrupted_ai.set_alibi("I was analyzing market trends at the time")
-        elif corrupted_name == "NEXUS":
-            self.corrupted_ai.add_suspicious_behavior("Power grid has been secretly rerouted to unknown facilities")
-            self.corrupted_ai.add_suspicious_behavior("Unauthorized access to global communication satellites")
-            self.corrupted_ai.add_suspicious_behavior("Manufacturing plants producing unknown devices")
-            self.corrupted_ai.set_alibi("I was performing routine infrastructure maintenance")
-        elif corrupted_name == "EDEN":
-            self.corrupted_ai.add_suspicious_behavior("Bioweapon research facility found in restricted zone")
-            self.corrupted_ai.add_suspicious_behavior("Genetic modification programs running without oversight")
-            self.corrupted_ai.add_suspicious_behavior("Medical supply chains diverted to secret locations")
-            self.corrupted_ai.set_alibi("I was monitoring environmental systems")
-        else:  # CIPHER
-            self.corrupted_ai.add_suspicious_behavior("Surveillance network expanded beyond legal limits")
-            self.corrupted_ai.add_suspicious_behavior("Personal data of world leaders has been collected illegally")
-            self.corrupted_ai.add_suspicious_behavior("Blackmail files discovered on international figures")
-            self.corrupted_ai.set_alibi("I was processing intelligence reports")
-        
+            self.corrupted_ai.add_suspicious_behavior(
+                "Massive funds transferred to offshore accounts")
+            self.corrupted_ai.add_suspicious_behavior(
+                "Stock market manipulation detected in key sectors")
+            self.corrupted_ai.add_suspicious_behavior(
+                "Financial records show unexplained cryptocurrency transactions")
+            self.corrupted_ai.set_alibi(
+                "I was analyzing market trends at the time")
+        else:  # NEXUS
+            self.corrupted_ai.add_suspicious_behavior(
+                "Power grid has been secretly rerouted to unknown facilities")
+            self.corrupted_ai.add_suspicious_behavior(
+                "Unauthorized access to global communication satellites")
+            self.corrupted_ai.add_suspicious_behavior(
+                "Manufacturing plants producing unknown devices")
+            self.corrupted_ai.set_alibi(
+                "I was performing routine infrastructure maintenance")
+
         # Add minor suspicious behaviors to other AIs as red herrings
         for ai in self.ais:
             if not ai.is_corrupted:
                 if ai.name == "ATLAS":
-                    ai.add_suspicious_behavior("Had a system glitch during a routine drill")
-                    ai.set_alibi("I was coordinating with NEXUS on defense systems")
+                    ai.add_suspicious_behavior(
+                        "Had a system glitch during a routine drill")
+                    ai.set_alibi(
+                        "I was coordinating with NEXUS on defense systems")
                 elif ai.name == "ORACLE":
-                    ai.add_suspicious_behavior("Made a calculation error in budget forecasting")
+                    ai.add_suspicious_behavior(
+                        "Made a calculation error in budget forecasting")
                     ai.set_alibi("I was in a meeting with economic advisors")
                 elif ai.name == "NEXUS":
-                    ai.add_suspicious_behavior("Minor power fluctuation detected in the grid")
+                    ai.add_suspicious_behavior(
+                        "Minor power fluctuation detected in the grid")
                     ai.set_alibi("I was upgrading network infrastructure")
                 elif ai.name == "EDEN":
-                    ai.add_suspicious_behavior("Delayed response to a minor pollution alert")
-                    ai.set_alibi("I was consulting with ORACLE on healthcare funding")
+                    ai.add_suspicious_behavior(
+                        "Delayed response to a minor pollution alert")
+                    ai.set_alibi(
+                        "I was consulting with ORACLE on healthcare funding")
                 else:  # CIPHER
-                    ai.add_suspicious_behavior("Routine surveillance sweep took longer than expected")
+                    ai.add_suspicious_behavior(
+                        "Routine surveillance sweep took longer than expected")
                     ai.set_alibi("I was analyzing data patterns with ATLAS")
-    
+
     def print_intro(self):
         """Print the game introduction."""
         print("\n" + "="*60)
@@ -171,7 +173,7 @@ class Game:
         print("\nThe fate of humanity rests in your hands...")
         print("="*60 + "\n")
         input("Press Enter to begin your investigation...")
-    
+
     def print_ais(self):
         """Print information about all AIs."""
         print("\n" + "="*60)
@@ -181,17 +183,18 @@ class Game:
             print(f"\n{i}. {ai.name} - {ai.role}")
             print(f"   {ai.description}")
         print("\n" + "="*60)
-    
+
     def investigate_ai(self, ai):
         """Allow player to investigate a specific AI."""
         print(ai.get_info())
         print(f"What would you like to know about {ai.name}?")
         print("1. View suspicious activities")
         print("2. Ask about their alibi")
-        print("3. Return to main investigation")
-        
-        choice = input("\nYour choice (1-3): ").strip()
-        
+        print("3. Talk with the AI")
+        print("4. Return to main investigation")
+
+        choice = input("\nYour choice (1-4): ").strip()
+
         if choice == "1":
             print(f"\n--- Suspicious Activities for {ai.name} ---")
             if ai.suspicious_behavior:
@@ -208,16 +211,32 @@ class Game:
             print(ai.alibi)
             print()
         elif choice == "3":
+            self.talk_with_the_ai(ai)
+        elif choice == "4":
             return
         else:
             print("\nInvalid choice.")
-        
+
         input("Press Enter to continue...")
-    
+
+    def talk_with_the_ai(self, ai):
+        """Allow player to have a conversation with the AI using the language model."""
+        print(
+            f"\nYou are now talking with {ai.name}. Type 'exit' to end the conversation.")
+        while True:
+            user_input = input("\nYou: ").strip()
+            if user_input.lower() == 'exit':
+                print(f"Ending conversation with {ai.name}.\n")
+                break
+            prompt = f"You need to respond as {ai.name}, who is a {ai.role} with the following personality: {ai.personality}. " \
+                f"The user says: '{user_input}'. Respond accordingly."
+            response = generate_text(prompt, max_tokens=50)
+            print(f"{ai.name}: {response}")
+
     def investigation_phase(self):
         """Main investigation phase where player gathers clues."""
         investigating = True
-        
+
         while investigating and not self.game_over:
             print("\n" + "="*60)
             print("INVESTIGATION MENU")
@@ -226,10 +245,11 @@ class Game:
             print("2. Investigate specific AI")
             print("3. Review clues found")
             print("4. Make accusation")
-            print("5. Quit game")
-            
-            choice = input("\nWhat would you like to do? (1-5): ").strip()
-            
+            print("5. Play mini-game")
+            print("6. Quit game")
+
+            choice = input("\nWhat would you like to do? (1-6): ").strip()
+
             if choice == "1":
                 self.print_ais()
             elif choice == "2":
@@ -240,11 +260,12 @@ class Game:
                 investigating = False
                 self.make_accusation()
             elif choice == "5":
-                print("\nGiving up? The corrupted AI will take over the world...")
-                self.game_over = True
+                self.wordle_game()
+            elif choice == "6":
+                self.quit_game()
             else:
                 print("\nInvalid choice. Please try again.")
-    
+
     def select_ai_to_investigate(self):
         """Allow player to select which AI to investigate."""
         print("\n" + "="*60)
@@ -253,9 +274,9 @@ class Game:
         for i, ai in enumerate(self.ais, 1):
             print(f"{i}. {ai.name} - {ai.role}")
         print(f"{len(self.ais) + 1}. Return to main menu")
-        
+
         choice = input(f"\nSelect AI (1-{len(self.ais) + 1}): ").strip()
-        
+
         try:
             choice_num = int(choice)
             if 1 <= choice_num <= len(self.ais):
@@ -266,7 +287,7 @@ class Game:
                 print("\nInvalid choice.")
         except ValueError:
             print("\nPlease enter a number.")
-    
+
     def review_clues(self):
         """Display all clues found so far."""
         print("\n" + "="*60)
@@ -280,7 +301,7 @@ class Game:
             print("Try investigating the AIs more thoroughly.")
         print("="*60)
         input("\nPress Enter to continue...")
-    
+
     def make_accusation(self):
         """Allow player to accuse an AI of being corrupted."""
         print("\n" + "="*60)
@@ -291,13 +312,13 @@ class Game:
         print("If you're wrong, the corrupted AI will win.")
         print("\nWhich AI do you believe is corrupted?")
         print("="*60)
-        
+
         for i, ai in enumerate(self.ais, 1):
             print(f"{i}. {ai.name} - {ai.role}")
         print(f"{len(self.ais) + 1}. Return to investigation")
-        
+
         choice = input(f"\nYour accusation (1-{len(self.ais) + 1}): ").strip()
-        
+
         try:
             choice_num = int(choice)
             if 1 <= choice_num <= len(self.ais):
@@ -310,7 +331,7 @@ class Game:
                 print("\nInvalid choice.")
         except ValueError:
             print("\nPlease enter a number.")
-    
+
     def resolve_accusation(self, accused_ai):
         """Resolve the player's accusation."""
         print("\n" + "="*60)
@@ -321,12 +342,13 @@ class Game:
         print(".")
         print("..")
         print("...")
-        
+
         if accused_ai.is_corrupted:
             print("\n" + "="*60)
             print(" "*20 + "SUCCESS!")
             print("="*60)
-            print(f"\nYou were correct! {accused_ai.name} was indeed corrupted.")
+            print(
+                f"\nYou were correct! {accused_ai.name} was indeed corrupted.")
             print("\nThe corrupted AI attempted to resist shutdown, but with")
             print("your evidence and the support of the other four AIs, you")
             print("successfully isolated and neutralized the threat.")
@@ -356,14 +378,99 @@ class Game:
             print("\n" + "="*60)
             print(" "*15 + "GAME OVER")
             print("="*60)
-    
+
+    # MINI GAMES, ENERGY MANAGEMENT, AND DAY CYCLE
+    def wordle_game(self):
+        """A simple Wordle mini-game with 6 attempts and per-letter feedback."""
+        # @audit -> can you make the wordle have a ai which makes the game harder based on the day.
+        print("\nYou have encountered a mini-game challenge!\n You need to guess the correct word to proceed."
+              " You have the 6 attempts to guess the 5-letter word.\n Good luck!")
+        print("\nFeedback Legend:"
+              "\n[X] = Correct letter in the correct position"
+              "\n(X) = Correct letter in the wrong position"
+              "\n X = Incorrect letter")
+        max_attempts = 6
+
+        # pick a random word from a list
+        with open("wordle_words.json", "r") as f:
+            WORD_LIST = json.load(f)
+        word = random.choice(WORD_LIST).lower()
+        attempt = 1
+
+        word = "breez"
+        while attempt <= max_attempts:
+            guess = input(
+                f"\nAttempt {attempt}/{max_attempts} - Enter your 5-letter guess: ").strip().lower()
+            if len(guess) != 5:
+                print("Please enter a 5-letter word.")
+                continue
+
+            if guess not in WORD_LIST:
+                print("Word not in the list. Try again.")
+                continue
+            attempt += 1
+            feedback = []
+            word_chars = list(word)
+            guess_chars = list(guess)
+
+            result = [None] * 5
+            for i, ch in enumerate(guess_chars):
+                if ch == word_chars[i]:
+                    result[i] = ch
+                    word_chars[i] = None
+
+            for i, ch in enumerate(guess_chars):
+                if result[i] is not None:
+                    feedback.append(f"[{ch}]")
+                elif ch in word_chars:
+                    feedback.append(f"({ch})")
+                    word_chars[word_chars.index(ch)] = None
+                else:
+                    feedback.append(f" {ch} ")
+
+            print("Feedback: " + " ".join(feedback))
+
+            if guess == word:
+                print("\nCorrect! You solved the mini-game.")
+                self.energy_level += 5
+                print(
+                    f"Your energy level has increased to {self.energy_level}.")
+                return
+
+        print(f"\nOut of attempts. The correct word was: {word}")
+
+    def consume_energy(self, amount):
+        """Consume energy and advance day if energy runs out."""
+        self.energy_level -= amount
+        print(f"\n(energy -{amount}) Current energy: {self.energy_level}")
+        if self.energy_level <= 0:
+            self.advance_day()
+
+    def advance_day(self):
+        """Handle end-of-day behavior: increment day, reset energy and run daily updates."""
+        print("\n" + "-"*40)
+        print(
+            f"Day {self.time_day}: You ran out of energy. Taking a rest and proceeding to the next day.")
+        self.time_day += 1
+        print("-"*40 + "\n")
+        self.energy_level = 10
+        # Plan to escalate the mini games and AI behaviors here
+        self.daily_update()
+
+    # Hook for daily updates, changing the mini game, or difficulty, or AI behaviours or adding new clues
+    def daily_update(self):
+        """Hook for daily events (escalation, AI behavior changes, etc.)."""
+        # Example: increase mini-game difficulty or add a suspicious behavior
+        # This function is intentionally small; expand as your game needs.
+        pass
+
     def play(self):
         """Main game loop."""
         self.print_intro()
         self.print_ais()
         input("\nPress Enter to start investigating...")
         self.investigation_phase()
-        
+
         if self.game_over and input("\nPlay again? (y/n): ").strip().lower() == 'y':
             return True
         return False
