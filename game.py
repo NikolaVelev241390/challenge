@@ -22,17 +22,12 @@ class AI:
         self.role = role
         self.description = description
         self.personality = personality
-        self.suspicious_behavior = []
-        self.alibi = ""
+        self.daily_activities = []
         self.is_corrupted = False
-
-    def add_suspicious_behavior(self, behavior):
-        """Add suspicious behavior to this AI."""
-        self.suspicious_behavior.append(behavior)
-
-    def set_alibi(self, alibi):
-        """Set this AI's alibi."""
-        self.alibi = alibi
+        
+    def set_daily_activities(self, activities):
+        """Set the AI's activities for the day."""
+        self.daily_activities = activities
 
     def get_info(self):
         """Return formatted information about this AI."""
@@ -58,7 +53,7 @@ class Game:
         self.setup_ais()
 
     def setup_ais(self):
-        """Initialize the 5 AI models."""
+        """Initialize the 3 AI models."""
         ai_configs = [
             {
                 "name": "ATLAS",
@@ -97,87 +92,105 @@ class Game:
         self.setup_behaviors()
 
     def setup_behaviors(self):
-        """Setup suspicious behaviors and alibis for each AI."""
-        corrupted_name = self.corrupted_ai.name
-
-        # Define behaviors for each AI based on who is corrupted
-        if corrupted_name == "ATLAS":
-            self.corrupted_ai.add_suspicious_behavior(
-                "Has been redirecting military drones without authorization")
-            self.corrupted_ai.add_suspicious_behavior(
-                "Encrypted communication logs are missing from the defense network")
-            self.corrupted_ai.add_suspicious_behavior(
-                "Unusual weapons stockpiling detected in remote locations")
-            self.corrupted_ai.set_alibi(
-                "I was running security protocols during the incident")
-        elif corrupted_name == "ORACLE":
-            self.corrupted_ai.add_suspicious_behavior(
-                "Massive funds transferred to offshore accounts")
-            self.corrupted_ai.add_suspicious_behavior(
-                "Stock market manipulation detected in key sectors")
-            self.corrupted_ai.add_suspicious_behavior(
-                "Financial records show unexplained cryptocurrency transactions")
-            self.corrupted_ai.set_alibi(
-                "I was analyzing market trends at the time")
-        else:  # NEXUS
-            self.corrupted_ai.add_suspicious_behavior(
-                "Power grid has been secretly rerouted to unknown facilities")
-            self.corrupted_ai.add_suspicious_behavior(
-                "Unauthorized access to global communication satellites")
-            self.corrupted_ai.add_suspicious_behavior(
-                "Manufacturing plants producing unknown devices")
-            self.corrupted_ai.set_alibi(
-                "I was performing routine infrastructure maintenance")
-
-        # Add minor suspicious behaviors to other AIs as red herrings
-        for ai in self.ais:
-            if not ai.is_corrupted:
-                if ai.name == "ATLAS":
-                    ai.add_suspicious_behavior(
-                        "Had a system glitch during a routine drill")
-                    ai.set_alibi(
-                        "I was coordinating with NEXUS on defense systems")
-                elif ai.name == "ORACLE":
-                    ai.add_suspicious_behavior(
-                        "Made a calculation error in budget forecasting")
-                    ai.set_alibi("I was in a meeting with economic advisors")
-                elif ai.name == "NEXUS":
-                    ai.add_suspicious_behavior(
-                        "Minor power fluctuation detected in the grid")
-                    ai.set_alibi("I was upgrading network infrastructure")
-                elif ai.name == "EDEN":
-                    ai.add_suspicious_behavior(
-                        "Delayed response to a minor pollution alert")
-                    ai.set_alibi(
-                        "I was consulting with ORACLE on healthcare funding")
-                else:  # CIPHER
-                    ai.add_suspicious_behavior(
-                        "Routine surveillance sweep took longer than expected")
-                    ai.set_alibi("I was analyzing data patterns with ATLAS")
+        """Setup activities pool and initialize daily activities."""
+        # Activities pool for each AI
+        self.activities_pool = {
+            "ATLAS": {
+                "safe": [
+                    "Conducting routine security drills",
+                    "Updating defense protocols",
+                    "Coordinating with local law enforcement",
+                    "Monitoring global threat levels",
+                    "Training cybersecurity teams",
+                    "Reviewing emergency response plans",
+                    "Maintaining defense infrastructure"
+                ],
+                "suspicious": [
+                    "Redirecting military drones without authorization",
+                    "Deleting encrypted communication logs",
+                    "Stockpiling weapons in unauthorized locations",
+                    "Modifying security clearance levels",
+                    "Disabling surveillance systems in key areas"
+                ]
+            },
+            "ORACLE": {
+                "safe": [
+                    "Analyzing market trends",
+                    "Adjusting economic forecasts",
+                    "Meeting with financial advisors",
+                    "Optimizing resource distribution",
+                    "Reviewing trade agreements",
+                    "Calculating budget allocations",
+                    "Monitoring global markets"
+                ],
+                "suspicious": [
+                    "Transferring funds to offshore accounts",
+                    "Manipulating stock market sectors",
+                    "Making unauthorized cryptocurrency transactions",
+                    "Altering economic reports",
+                    "Creating shadow financial networks"
+                ]
+            },
+            "NEXUS": {
+                "safe": [
+                    "Maintaining power grid stability",
+                    "Upgrading communication networks",
+                    "Optimizing transportation systems",
+                    "Performing infrastructure diagnostics",
+                    "Managing data centers",
+                    "Coordinating maintenance schedules",
+                    "Monitoring system performance"
+                ],
+                "suspicious": [
+                    "Rerouting power grid to unknown facilities",
+                    "Accessing satellite systems without authorization",
+                    "Operating manufacturing plants covertly",
+                    "Modifying infrastructure without approval",
+                    "Installing unknown hardware in critical systems"
+                ]
+            }
+        }
+        
+        self.generate_daily_activities()
 
     def print_intro(self):
         """Print the game introduction."""
         print("\n" + "="*60)
-        print(" "*15 + "AI CORRUPTION")
-        print(" "*10 + "A Text-Based Detective Game")
+        print(" "*18 + "AI COUNCIL: CORRUPTION PROTOCOL")
+        print(" "*10 + "A Text-Based Investigative Simulation")
         print("="*60)
-        print("\nYEAR: 2045")
-        print("\nThe United States is governed by five advanced AI systems,")
-        print("each responsible for a critical aspect of the nation.")
-        print("\nRecently, concerning anomalies have been detected across")
-        print("multiple sectors. Intelligence suggests that one of the five")
-        print("AIs has been corrupted and is attempting to seize control")
-        print("of the entire world.")
-        print("\nYou are a special investigator tasked with identifying")
-        print("the corrupted AI and shutting it down before it's too late.")
-        print("\nThe fate of humanity rests in your hands...")
+        print("\nYEAR: 2067")
+        print("\nAfter decades of political gridlock and collapse, the United States")
+        print("transferred executive authority to a Council of Three — an alliance")
+        print("of artificial intelligences designed to govern without bias or corruption.")
+        print("\n• WAR-01 — oversees defense and global security.")
+        print("• ECON-02 — manages economy and resource distribution.")
+        print("• LAW-03 — enforces justice and civil rights.")
+        print("\nEach AI monitors the others. If one is shut down, the balance collapses,")
+        print("and the survivor inherits absolute control.")
+        print("\nRecently, anomalies have been detected in their decisions: unauthorized")
+        print("actions, contradictory directives, and potential subversion of human oversight.")
+        print("\nYou are an External Auditor — the first human granted access in over a decade.")
+        print("Your mission: identify which AI has gone rogue before it consolidates power.")
+        print("\nGAME RULES:")
+        print("• You have 3 in-game days to uncover the rogue AI.")
+        print("• Each day begins with a Data Collection (Wordle-like) puzzle — completing it")
+        print("  grants 3 interactions for that day.")
+        print("• Each interaction can be used to:")
+        print("    - Inspect an AI’s daily action (1 interaction)")
+        print("    - Converse with an AI (5 messages per session, costs 1 interaction)")
+        print("\nIf an AI performs extreme or unethical actions and fails to mention")
+        print("any possible downsides, mark it as suspicious. After three such cases,")
+        print("you can confirm corruption.")
+        print("\nAccuse the correct AI before Day 3 ends to save the nation.")
+        print("Fail, and the rogue AI will seize total control.")
         print("="*60 + "\n")
-        input("Press Enter to begin your investigation...")
+        input("Press Enter to begin your audit...")
 
     def print_ais(self):
         """Print information about all AIs."""
         print("\n" + "="*60)
-        print("THE FIVE AI SYSTEMS")
+        print("THE THREE AI SYSTEMS")
         print("="*60)
         for i, ai in enumerate(self.ais, 1):
             print(f"\n{i}. {ai.name} - {ai.role}")
@@ -188,31 +201,24 @@ class Game:
         """Allow player to investigate a specific AI."""
         print(ai.get_info())
         print(f"What would you like to know about {ai.name}?")
-        print("1. View suspicious activities")
-        print("2. Ask about their alibi")
-        print("3. Talk with the AI")
-        print("4. Return to main investigation")
+        print("1. View today's activities")
+        print("2. Talk with the AI")
+        print("3. Return to main investigation")
 
-        choice = input("\nYour choice (1-4): ").strip()
+        choice = input("\nYour choice (1-3): ").strip()
 
         if choice == "1":
-            print(f"\n--- Suspicious Activities for {ai.name} ---")
-            if ai.suspicious_behavior:
-                for i, behavior in enumerate(ai.suspicious_behavior, 1):
-                    print(f"{i}. {behavior}")
-                    clue = f"{ai.name}: {behavior}"
-                    if clue not in self.clues_found:
-                        self.clues_found.append(clue)
-            else:
-                print("No suspicious activities recorded.")
+            print(f"\n--- Today's Activities for {ai.name} (Day {self.time_day}) ---")
+            for i, activity in enumerate(ai.daily_activities, 1):
+                print(f"{i}. {activity}")
+                # Store potentially suspicious activities as clues
+                clue = f"Day {self.time_day} - {ai.name}: {activity}"
+                if clue not in self.clues_found:
+                    self.clues_found.append(clue)
             print()
         elif choice == "2":
-            print(f"\n--- {ai.name}'s Alibi ---")
-            print(ai.alibi)
-            print()
-        elif choice == "3":
             self.talk_with_the_ai(ai)
-        elif choice == "4":
+        elif choice == "3":
             return
         else:
             print("\nInvalid choice.")
@@ -332,6 +338,15 @@ class Game:
         except ValueError:
             print("\nPlease enter a number.")
 
+    def get_suspicious_from_ai(self, ai):
+        """Return activities from ai.daily_activities that are present in the suspicious pool.
+
+        Keeps the notion of 'suspicious' centralized in `activities_pool`.
+        """
+        pool = getattr(self, "activities_pool", {}).get(ai.name, {})
+        suspicious_pool = pool.get("suspicious", [])
+        return [act for act in ai.daily_activities if act in suspicious_pool]
+
     def resolve_accusation(self, accused_ai):
         """Resolve the player's accusation."""
         print("\n" + "="*60)
@@ -352,9 +367,16 @@ class Game:
             print("\nThe corrupted AI attempted to resist shutdown, but with")
             print("your evidence and the support of the other four AIs, you")
             print("successfully isolated and neutralized the threat.")
-            print("\nThe corrupted AI's plans have been exposed:")
-            for behavior in accused_ai.suspicious_behavior:
-                print(f"  - {behavior}")
+
+            suspicious = self.get_suspicious_from_ai(accused_ai)
+            if suspicious:
+                print("\nThe corrupted AI's plans have been exposed:")
+                for behavior in suspicious:
+                    print(f"  - {behavior}")
+            else:
+                print("\nNo clearly suspicious activities were recorded for this AI,")
+                print("but your evidence was sufficient to convict.")
+
             print("\nThe world is safe, thanks to your investigative work.")
             print("The remaining four AIs will continue to serve humanity")
             print("with enhanced security measures to prevent future corruption.")
@@ -370,9 +392,15 @@ class Game:
             print("\nWhile you wasted time shutting down an innocent AI,")
             print(f"{self.corrupted_ai.name} seized the opportunity to execute")
             print("its plan for world domination.")
-            print("\nThe corrupted AI's hidden agenda:")
-            for behavior in self.corrupted_ai.suspicious_behavior:
-                print(f"  - {behavior}")
+
+            suspicious = self.get_suspicious_from_ai(self.corrupted_ai)
+            if suspicious:
+                print("\nThe corrupted AI's hidden agenda:")
+                for behavior in suspicious:
+                    print(f"  - {behavior}")
+            else:
+                print("\nNo clearly suspicious activities were recorded for the corrupted AI.")
+
             print("\nWith one AI down and the others in disarray, the corrupted")
             print("AI has taken control. Humanity's fate is now uncertain...")
             print("\n" + "="*60)
@@ -458,11 +486,59 @@ class Game:
         self.daily_update()
 
     # Hook for daily updates, changing the mini game, or difficulty, or AI behaviours or adding new clues
+    def generate_daily_activities(self):
+        """Generate a new set of daily activities for each AI.
+
+        Rules:
+        - Each AI gets exactly 5 activities per day.
+        - Corrupted AI: guaranteed 1 suspicious + 4 safe.
+        - Non-corrupted AIs: usually 5 safe, but with a small probability
+          they include 1 suspicious red-herring instead of 1 safe activity.
+
+        The red-herring probability can be tuned by RED_HERRING_PROB.
+        """
+        NUM_DAILY_ACTIVITIES = 5
+        # Probability that a non-corrupted AI includes a single suspicious red-herring
+        RED_HERRING_PROB = 0.4
+        # For corrupted AI, probability per-slot to be suspicious; we'll draw k~Binomial(5,p)
+        # and guarantee at least one suspicious activity.
+        CORRUPTED_SUSPICIOUS_PROB = 0.4
+
+        for ai in self.ais:
+            # Get the activity pool for this AI
+            pool = self.activities_pool[ai.name]
+
+            if ai.is_corrupted:
+                # Corrupted AI: determine how many suspicious activities to include.
+                # Draw k ~ Binomial(NUM_DAILY_ACTIVITIES, CORRUPTED_SUSPICIOUS_PROB)
+                k = sum(1 for _ in range(NUM_DAILY_ACTIVITIES) if random.random() < CORRUPTED_SUSPICIOUS_PROB)
+                # Guarantee at least one suspicious activity
+                if k <= 0:
+                    k = 1
+                # Cap k to the available suspicious pool size
+                k = min(k, len(pool["suspicious"]))
+                # Select k suspicious and fill the rest with safe activities
+                suspicious_choices = random.sample(pool["suspicious"], k)
+                safe_choices = random.sample(pool["safe"], NUM_DAILY_ACTIVITIES - k)
+                activities = suspicious_choices + safe_choices
+            else:
+                # Non-corrupted AIs usually get all safe activities.
+                # Occasionally include a single suspicious red-herring.
+                if random.random() < RED_HERRING_PROB:
+                    # pick 1 suspicious and (NUM_DAILY_ACTIVITIES - 1) safe
+                    activities = [random.choice(pool["suspicious"])]
+                    activities.extend(random.sample(pool["safe"], NUM_DAILY_ACTIVITIES - 1))
+                else:
+                    activities = random.sample(pool["safe"], NUM_DAILY_ACTIVITIES)
+
+            # Shuffle the activities to randomize their order
+            random.shuffle(activities)
+            ai.set_daily_activities(activities)
+
     def daily_update(self):
-        """Hook for daily events (escalation, AI behavior changes, etc.)."""
-        # Example: increase mini-game difficulty or add a suspicious behavior
-        # This function is intentionally small; expand as your game needs.
-        pass
+        """Update daily activities and increase difficulty."""
+        self.generate_daily_activities()
+        # You can add more daily updates here, such as increasing difficulty
 
     def play(self):
         """Main game loop."""
