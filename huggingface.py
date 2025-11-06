@@ -3,7 +3,7 @@ from openai import OpenAI
 
 client = OpenAI(
     base_url="https://router.huggingface.co/v1",
-    api_key="TOKEN HERE",
+    api_key="PUT YOUR KEY HERE",
 )
 
 
@@ -18,4 +18,9 @@ def generate_text_game(prompt: str, max_tokens: int = 50):
             }
         ],
     )
-    return completion.choices[0].message
+    return completion.choices[0].message.content
+
+
+
+
+
