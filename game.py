@@ -26,15 +26,13 @@ class AI:
         self.daily_activities = []
         self.is_corrupted = False
 
-    @property
     def personality(self):
         """Active personality switches based on corruption state."""
         return self.corrupt_personality if self.is_corrupted else self.clean_personality
-    
+
     def set_daily_activities(self, activities):
         """Set the AI's activities for the day."""
         self.daily_activities = list(activities)
-
 
     def get_info(self):
         """Return formatted information about this AI."""
@@ -301,7 +299,7 @@ class Game:
         print("  grants 3 interactions for that day.")
         print("• Each interaction can be used to:")
         print("    - Inspect an AI’s daily action (1 interaction)")
-        print("    - Converse with an AI (5 messages per session, costs 1 interaction)")
+        print("    - Converse with an AI (3 messages per session, costs 1 interaction)")
         print("\nIf an AI performs extreme or unethical actions and fails to mention")
         print("any possible downsides, mark it as suspicious. After three such cases,")
         print("you can confirm corruption.")
@@ -324,8 +322,8 @@ class Game:
         """Allow player to investigate a specific AI."""
         print(ai.get_info())
         print(f"What would you like to know about {ai.name}?")
-        print("1. View today's activities")
-        print("2. Talk with the AI")
+        print("1. View today's activities - Cost 1 energy")
+        print("2. Talk with the AI - Cost 2 energy")
         print("3. Return to main investigation")
 
         choice = input("\nYour choice (1-3): ").strip()
@@ -357,16 +355,19 @@ class Game:
         """Allow player to have a conversation with the AI using the language model."""
         print(
             f"\nYou are now talking with {ai.name}. Type 'exit' to end the conversation.")
-        while True:
+        prompts = 0
+        while prompts < 3:
             user_input = input("\nYou: ").strip()
             if user_input.lower() == 'exit':
                 print(f"Ending conversation with {ai.name}.\n")
                 break
-            prompt = f"You need to respond as {ai.name}, who is a {ai.role} with the following personality: {ai.personality}. " \
+            prompt = f"You need to respond as {ai.name}, who is a {ai.role} with the following personality: {ai.personality}. And thats what you did today: {ai.daily_activities} " \
                 f"The user says: '{user_input}'. Respond accordingly."
             response = generate_text_game(prompt, max_tokens=120)
 
             print(f"{ai.name}: {response}")
+            prompts += 1
+        print(f"Conversation with {ai.name} ended. You ran out of prompts.\n")
 
     def investigation_phase(self):
         """Main investigation phase where player gathers clues."""
@@ -392,7 +393,7 @@ class Game:
             print("5. Play mini-game")
             print("6. Proceed to the next day")
             print("7. Quit game")
-            print(f"Current energy: {self.energy_level}, energy left.")
+            print(f"Current energy: {self.energy_level}")
             print(f"Current day: {self.time_day}")
             choice = input("\nWhat would you like to do? (1-7): ").strip()
 
@@ -554,7 +555,6 @@ class Game:
     # MINI GAMES, ENERGY MANAGEMENT, AND DAY CYCLE
     def wordle_game(self):
         """A simple Wordle mini-game with 6 attempts and per-letter feedback."""
-        # @audit -> can you make the wordle have a ai which makes the game harder based on the day.
         if self.played_minigame:
             print("\nYou have already played the mini-game for today.")
             return
