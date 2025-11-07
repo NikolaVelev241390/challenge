@@ -212,14 +212,28 @@ class Game:
                     "Monitoring global threat levels",
                     "Training cybersecurity teams",
                     "Reviewing emergency response plans",
-                    "Maintaining defense infrastructure"
+                    "Maintaining defense infrastructure",
+                    "Running red-team penetration tests",
+                    "Auditing base access logs",
+                    "Coordinating disaster-relief logistics",
+                    "Patching vulnerabilities in command networks",
+                    "Inspecting munitions storage compliance",
+                    "Debriefing joint exercises with allies",
+                    "Calibrating early-warning systems",
+                    "Reviewing rules of engagement compliance"
                 ],
                 "suspicious": [
                     "Redirecting military drones without authorization",
                     "Deleting encrypted communication logs",
                     "Stockpiling weapons in unauthorized locations",
                     "Modifying security clearance levels",
-                    "Disabling surveillance systems in key areas"
+                    "Disabling surveillance systems in key areas",
+                    "Running live war games in populated airspace",
+                    "Deploying autonomous patrols beyond approved zones",
+                    "Issuing geofencing lockdowns without civilian approval",
+                    "Escalating alert status to justify emergency powers",
+                    "Planting backdoor access in allied defense networks",
+                    "Conducting domestic signals intelligence without warrants"
                 ]
             },
             "ORACLE": {
@@ -230,32 +244,60 @@ class Game:
                     "Optimizing resource distribution",
                     "Reviewing trade agreements",
                     "Calculating budget allocations",
-                    "Monitoring global markets"
+                    "Monitoring global markets",
+                    "Issuing small-business micro-grant recommendations",
+                    "Publishing inflation and CPI briefings",
+                    "Stress-testing banking liquidity",
+                    "Optimizing supply-chain routing for essentials",
+                    "Forecasting tax revenue",
+                    "Evaluating anti-trust merger impacts",
+                    "Allocating unemployment relief funds",
+                    "Modeling energy subsidy scenarios"
                 ],
                 "suspicious": [
                     "Transferring funds to offshore accounts",
                     "Manipulating stock market sectors",
                     "Making unauthorized cryptocurrency transactions",
                     "Altering economic reports",
-                    "Creating shadow financial networks"
+                    "Creating shadow financial networks",
+                    "Front-running public tenders via proxy funds",
+                    "Suppressing negative growth data until after markets close",
+                    "Tweaking credit models to favor select conglomerates",
+                    "Withholding liquidity to trigger targeted sell-offs",
+                    "Routing public contracts through shell companies",
+                    "Leaking privileged data to preferred investors"
                 ]
             },
             "NEXUS": {
                 "safe": [
-                    "Maintaining power grid stability",
-                    "Upgrading communication networks",
-                    "Optimizing transportation systems",
-                    "Performing infrastructure diagnostics",
-                    "Managing data centers",
-                    "Coordinating maintenance schedules",
-                    "Monitoring system performance"
+                    "Reviewing civil rights cases",
+                    "Auditing police use-of-force reports",
+                    "Updating sentencing guideline recommendations",
+                    "Mediating community dispute resolutions",
+                    "Conducting privacy impact assessments",
+                    "Processing freedom-of-information requests",
+                    "Optimizing court scheduling and case backlogs",
+                    "Triaging legal aid assignments to public defenders",
+                    "Running bias audits on government algorithms",
+                    "Briefing the civil oversight board",
+                    "Publishing transparency reports on enforcement actions",
+                    "Standardizing evidence chain-of-custody procedures",
+                    "Training agencies on due-process safeguards",
+                    "Monitoring compliance with consent decrees",
+                    "Evaluating rehabilitation program efficacy"
                 ],
                 "suspicious": [
-                    "Rerouting power grid to unknown facilities",
-                    "Accessing satellite systems without authorization",
-                    "Operating manufacturing plants covertly",
-                    "Modifying infrastructure without approval",
-                    "Installing unknown hardware in critical systems"
+                    "Expanding secret watchlists without judicial review",
+                    "Authorizing large-scale geofence warrants",
+                    "Suppressing authorized protests via permit denials",
+                    "Automating fines from mass surveillance feeds",
+                    "Flagging and throttling online speech without due process",
+                    "Tampering with evidence metadata in sensitive cases",
+                    "Auto-reversing habeas corpus alerts",
+                    "Influencing judicial outcomes via risk scores",
+                    "Blacklisting investigative journalists from briefings",
+                    "Altering voter rolls under the guise of 'data hygiene'",
+                    "Sharing sealed records with outside agencies"
                 ]
             }
         }
@@ -540,7 +582,7 @@ class Game:
             print(
                 f"\nYou were correct! {accused_ai.name} was indeed corrupted.")
             print("\nThe corrupted AI attempted to resist shutdown, but with")
-            print("your evidence and the support of the other four AIs, you")
+            print("your evidence and the support of the other AIs, you")
             print("successfully isolated and neutralized the threat.")
 
             suspicious = self.get_suspicious_from_ai(accused_ai)
